@@ -18,3 +18,7 @@ class Biwired:
         # start: request login screen
         self.driver = driver
         self.driver.get("https://app.wire.com/auth/#login")
+        
+    from biwired.helpers import (find_element,
+                                 wait_for_element,
+                                 get_credentials)
