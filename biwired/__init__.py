@@ -22,4 +22,5 @@ class Biwired:
     from biwired.auth import log_in
     from biwired.helpers import (find_element,
                                  wait_for_element,
-                                 get_credentials)
+                                 get_credentials,
+                                 execute_script)

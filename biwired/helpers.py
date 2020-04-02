@@ -1,4 +1,5 @@
 import json
+import os.path
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -24,3 +25,12 @@ def get_credentials(self, path):
             return json.load(f)
     except:
         raise CredentialsError("Failed to read credentials")
+
+def execute_script(self, script, *args):
+    path = __file__
+    path = os.path.abspath(path)
+    path = os.path.dirname(path)
+    path = os.path.join(path, "js", "{0}.js".format(script))
+    
+    with open(path) as f:
+        return self.driver.execute_script(f.read(), *args)
