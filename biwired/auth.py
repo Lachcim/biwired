@@ -1,9 +1,10 @@
 from biwired.exceptions import CredentialsError, ConnectivityError
+from biwired.helpers import get_credentials
 
 def log_in(self, username=None, password=None, credentials_path="credentials.json"):
     # get credentials from file if needed
     if not username or not password:
-        credentials = self.get_credentials(credentials_path)
+        credentials = get_credentials(credentials_path)
         username = credentials["username"]
         password = credentials["password"]
 

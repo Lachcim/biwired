@@ -19,18 +19,24 @@ def wait_for_element(self, query, timeout=10, frequency=0.1):
     except TimeoutException:
         raise ElementMissingError
         
-def get_credentials(self, path):
+def get_credentials(path):
     try:
         with open(path) as f:
             return json.load(f)
     except:
         raise CredentialsError("Failed to read credentials")
 
-def execute_script(self, script, *args):
+def get_script_path(script):
     path = __file__
     path = os.path.abspath(path)
     path = os.path.dirname(path)
     path = os.path.join(path, "js", "{0}.js".format(script))
-    
-    with open(path) as f:
+    return path
+
+def execute_script(self, script, *args):
+    with open(get_script_path(script)) as f:
         return self.driver.execute_script(f.read(), *args)
+
+def execute_async_script(self, script, *args):
+    with open(get_script_path(script)) as f:
+        return self.driver.execute_async_script(f.read(), *args)

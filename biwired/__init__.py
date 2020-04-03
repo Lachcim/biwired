@@ -15,6 +15,12 @@ class Biwired:
             options.add_argument("user-agent=Mozilla/5.0 Chrome/80.0 Biwired/0.1")
             options.add_experimental_option("excludeSwitches", ["enable-logging"])
             
+            prefs = {
+                "profile.default_content_settings.popups": 0,
+                "download.default_directory": "assets"
+            }
+            options.add_experimental_option("prefs", prefs)
+            
             driver = webdriver.Chrome(chrome_options=options)
         
         # start: request login screen
@@ -24,8 +30,8 @@ class Biwired:
     from biwired.auth import log_in
     from biwired.helpers import (find_element,
                                  wait_for_element,
-                                 get_credentials,
-                                 execute_script)
+                                 execute_script,
+                                 execute_async_script)
     from biwired.rawevents import (subscribe_to_events,
                                    get_new_events,
                                    pull_new_events,
