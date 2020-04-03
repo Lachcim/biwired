@@ -6,6 +6,14 @@ class Biwired:
         
         self.assets = {}
         
+    def __del__(self):
+        if self.driver:
+            try:
+                # kill driver, ignore exceptions due to Python shutting down
+                self.driver.quit()
+            except:
+                pass
+        
     def start_driver(self, driver=None):
         # provide default driver
         if not driver:
