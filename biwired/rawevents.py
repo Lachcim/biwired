@@ -10,8 +10,8 @@ def get_new_events(self):
     # collect events in batch mode
     events = self.execute_script("collectevents", 0)
     
-    for event in events:
-        event = self.process_event(event)
+    # process raw events
+    events = [self.process_event(event) for event in events]
         
     return events
     
