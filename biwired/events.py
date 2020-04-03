@@ -1,5 +1,4 @@
 from datetime import datetime
-from biwired.assets import Asset
 
 class BiwiredEvent: 
     def __init__(self, parent=None, raw_event=None):
@@ -16,28 +15,6 @@ class BiwiredEvent:
                 setattr(self, key, datetime.fromtimestamp(value) if bool(value) else None)
             else:
                 setattr(self, key, value)
-                
-        # handle assets
-        if self.type == "new_asset":
-            # create new asset
-            asset = Asset(self.parent, self.id)
-            asset.name = self.file_name
-            asset.size = self.file_size
-            asset.mime_type = self.file_mime_type
-            
-            # add new asset to repository
-            self.parent.assets[self.id] = asset
-            
-            # recreate attributes
-            del self.file_name
-            del self.file_size
-            del self.file_mime_type
-            self.asset = self.id
-        elif self.type == "asset_finished":
-            # update entry in repository
-            self.parent.assets[self.asset].success = self.success
-            self.parent.assets[self.asset].key = self.key
-            self.parent.assets[self.asset].token = self.token
                 
     def __str__(self):
         # format time, question mark for unknown times

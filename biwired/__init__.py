@@ -28,4 +28,5 @@ class Biwired:
                                  execute_script)
     from biwired.rawevents import (subscribe_to_events,
                                    get_new_events,
-                                   pull_new_events)
+                                   pull_new_events,
+                                   process_event)
