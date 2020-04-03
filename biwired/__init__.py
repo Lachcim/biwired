@@ -4,6 +4,8 @@ class Biwired:
     def __init__(self):
         self.driver = None
         
+        self.assets = {}
+        
     def start_driver(self, driver=None):
         # provide default driver
         if not driver:
