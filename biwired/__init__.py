@@ -24,3 +24,6 @@ class Biwired:
                                  wait_for_element,
                                  get_credentials,
                                  execute_script)
+    from biwired.rawevents import (subscribe_to_events,
+                                   get_new_events,
+                                   pull_new_events)
