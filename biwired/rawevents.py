@@ -1,12 +1,18 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from biwired.events import BiwiredEvent
 
 def subscribe_to_events(self):
     self.execute_script("subscribe")
     
 def get_new_events(self):
     # collect events in batch mode
-    return self.execute_script("collectevents", 0)
+    events = self.execute_script("collectevents", 0)
+    
+    for event in events:
+        event = BiwiredEvent(self, event)
+        
+    return events
     
 def pull_new_events(self, timeout=0, frequency=0.1):
     # attempt to collect event
@@ -27,4 +33,4 @@ def pull_new_events(self, timeout=0, frequency=0.1):
                 
         event = self.execute_script("collectevents", 1)
             
-    return event
+    return BiwiredEvent(self, event)
