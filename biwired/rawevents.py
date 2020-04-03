@@ -11,7 +11,7 @@ def get_new_events(self):
     events = self.execute_script("collectevents", 0)
     
     for event in events:
-        event = self.process_event(self, event)
+        event = self.process_event(event)
         
     return events
     
