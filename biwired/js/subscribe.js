@@ -27,7 +27,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		//asset upload start vs finish
 		if (!window.biwired_takenIds.has("asset" + event.id)) {
 			event.file_size = rawEvent.data.content_length;
-			event.file_mime_type = rawEvent.data.content_length;
+			event.file_mime_type = rawEvent.data.content_type;
 			event.file_name = rawEvent.data.info.name;
 			
 			window.biwired_takenIds.add("asset" + event.id)
