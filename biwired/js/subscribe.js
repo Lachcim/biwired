@@ -1,13 +1,31 @@
 window.biwired_events = [];
 window.biwired_takenIds = new Set();
 
+//wire permits duplicate event ids, generate fake id to guarantee uniqueness
+function biwired_guaranteeUniqueness(id) {
+	while (biwired_takenIds.has(id)) {	
+		var charCode = id.charCodeAt(0) + 1;
+		
+		if (charCode == 58) charCode = 97;
+		else if (charCode == 123) charCode = 48;
+		
+		id = String.fromCharCode(charCode) + id.substr(1);
+	}
+	
+	return id;
+}
+
 amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEvent) {
+	//create event
 	var event = {};
 	
-	event.id = rawEvent.id;
+	//supply basic data
+	event.id = biwired_guaranteeUniqueness(rawEvent.id);
+	event.raw_id = rawEvent.id;
 	event.raw_type = rawEvent.type;
 	event.time = new Date(rawEvent.time).getTime() / 1000 || null;
 	
+	//type-specific code
 	if (rawEvent.type == "conversation.message-add") {
 		event.type = "new_message";
 		event.author = rawEvent.from;
@@ -24,28 +42,35 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.author = rawEvent.from;
 		event.conversation = rawEvent.conversation;
 		
-		//asset upload start vs finish
-		if (!window.biwired_takenIds.has("asset" + event.id)) {
+		//two modes of asset handling:
+		//1. start event without key + finish event with key (web app)
+		//2. full asset event with key (mobile app)
+		
+		if (!rawEvent.data.status) {
+			//this handles (1.start)
+			event.type = "asset_started";
+			event.asset = event.raw_id;
+			
+			//data sent through this event overrides consequent data because it's more truthful
+			//this includes the original file size and image names
 			event.file_size = rawEvent.data.content_length;
 			event.file_mime_type = rawEvent.data.content_type;
 			event.file_name = rawEvent.data.info.name;
-			
-			window.biwired_takenIds.add("asset" + event.id)
 		}
 		else {
-			event.type = "asset_finished";
-			event.asset = event.id;
+			//this handles (1.finish and 2)
 			
-			//mock new id
-			var charCode = event.id.charCodeAt(0) + 1;
-			if (charCode == 58 || charCode == 123) charCode = 48;
-			event.id = String.fromCharCode(charCode) + event.id.substr(1);
-			event.id[8] = "X"; //mark counterfeit id
+			//if this is case 2, include previously unsupplied file info
+			if (!biwired_takenIds.has(event.raw_id)) {
+				event.file_size = rawEvent.data.content_length;
+				event.file_mime_type = rawEvent.data.content_type;
+				event.file_name = rawEvent.data.info.name;
+			}
 			
-			//suppress irrelevant states
-			if (rawEvent.data.status != "uploaded" && rawEvent.data.status != "upload-failed")
-				return;
+			//in case 1, the original event id matches the start event's id
+			event.asset = event.raw_id;
 			
+			//mark as successful and provide key and token unless failed
 			event.success = rawEvent.data.status == "uploaded";
 			event.key = rawEvent.data.key || null;
 			event.token = rawEvent.data.token || null;
@@ -83,4 +108,5 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	}
 	
 	window.biwired_events.push(event);
+	window.biwired_takenIds.add(event.id);
 });

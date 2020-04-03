@@ -38,23 +38,32 @@ def pull_new_events(self, timeout=0, frequency=0.1):
 
 def process_event(self, raw_event):
     # handle assets
-    if raw_event["type"] == "new_asset":
+    if raw_event["type"] == "asset_started":
         # create new asset
-        asset = Asset(self, raw_event["id"])
+        asset = Asset(self, raw_event["asset"])
         asset.name = raw_event["file_name"]
         asset.size = raw_event["file_size"]
         asset.mime_type = raw_event["file_mime_type"]
         
         # add new asset to repository
-        self.assets[raw_event["id"]] = asset
+        self.assets[raw_event["asset"]] = asset
         
-        # recreate attributes
+        # hide moved properties
         del raw_event["file_name"]
         del raw_event["file_size"]
         del raw_event["file_mime_type"]
-        raw_event["asset"] = raw_event["id"]
-    elif raw_event["type"] == "asset_finished":
-        # update entry in repository
+    elif raw_event["type"] == "new_asset":
+        # if the asset wasn't created by asset_started, create it now
+        if raw_event["asset"] not in self.assets:
+            asset = Asset(self, raw_event["asset"])
+            asset.name = raw_event["file_name"]
+            asset.size = raw_event["file_size"]
+            asset.mime_type = raw_event["file_mime_type"]
+            
+            # add to repository
+            self.assets[raw_event["asset"]] = asset
+    
+        # expand entry in repository
         self.assets[raw_event["asset"]].success = raw_event["success"]
         self.assets[raw_event["asset"]].key = raw_event["key"]
         self.assets[raw_event["asset"]].token = raw_event["token"]

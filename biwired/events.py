@@ -26,19 +26,21 @@ class BiwiredEvent:
                                                                self.author[:5],
                                                                self.conversation[:5],
                                                                self.content)
-        elif self.type == "new_asset":
+        elif self.type == "asset_started":
             return "{0} #{1} started uploading asset to #{2}".format(header,
                                                                self.author[:5],
                                                                self.conversation[:5])
-        elif self.type == "asset_finished":
+        elif self.type == "new_asset":
             if self.success:
-                return "{0} #{1} finished uploading asset #{2}".format(header,
+                return "{0} #{1} uploaded asset #{2} to #{3}".format(header,
                                                        self.author[:5],
-                                                       self.asset[:5])
+                                                       self.asset[:5],
+                                                       self.conversation[:5])
             else:
-                return "{0} #{1} failed to upload asset #{2}".format(header,
+                return "{0} #{1} failed to upload asset #{2} to #{3}".format(header,
                                                        self.author[:5],
-                                                       self.asset[:5])
+                                                       self.asset[:5],
+                                                       self.conversation[:5])
                                                                
         elif self.type == "message_edited":
             return "{0} #{1} edited message #{2}: {3}".format(header,
