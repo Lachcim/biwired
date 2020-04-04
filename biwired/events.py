@@ -17,36 +17,35 @@ class BiwiredEvent:
                 setattr(self, key, value)
                 
     def __str__(self):
-        # format time, question mark for unknown times
+        # format universal header
         time = self.time.strftime("%Y-%m-%d %H:%M:%S") if self.time else "?"
-        header = "{0} [#{1}]".format(time, self.id[:5])
+        header = "{0} [#{1}]".format(time, self.id[:5]) if self.id else time
     
         if self.type == "new_message":
             return "{0} #{1} sent message to #{2}: {3}".format(header,
                                                                self.author[:5],
                                                                self.conversation[:5],
                                                                self.content)
-        elif self.type == "asset_started":
-            return "{0} #{1} started uploading asset to #{2}".format(header,
-                                                               self.author[:5],
-                                                               self.conversation[:5])
-        elif self.type == "new_asset":
-            if self.success:
-                return "{0} #{1} uploaded asset #{2} to #{3}".format(header,
-                                                       self.author[:5],
-                                                       self.asset[:5],
-                                                       self.conversation[:5])
-            else:
-                return "{0} #{1} failed to upload asset #{2} to #{3}".format(header,
-                                                       self.author[:5],
-                                                       self.asset[:5],
-                                                       self.conversation[:5])
-                                                               
         elif self.type == "message_edited":
             return "{0} #{1} edited message #{2}: {3}".format(header,
                                                               self.author[:5],
                                                               self.message[:5],
                                                               self.content)
+        elif self.type == "new_asset":
+            if self.success:
+                return "{0} #{1} uploaded asset #{2} to #{3}".format(header,
+                                                                     self.author[:5],
+                                                                     self.asset[:5],
+                                                                     self.conversation[:5])
+            else:
+                return "{0} #{1} failed to upload asset #{2} to #{3}".format(header,
+                                                                             self.author[:5],
+                                                                             self.asset[:5],
+                                                                             self.conversation[:5])
+        elif self.type == "asset_started":
+            return "{0} #{1} started uploading asset to #{2}".format(header,
+                                                                     self.author[:5],
+                                                                     self.conversation[:5])
         elif self.type == "message_delivered":
             return "{0} #{1} received message #{2}".format(header,
                                                            self.reader[:5],
@@ -59,6 +58,23 @@ class BiwiredEvent:
             return "{0} #{1} unreacted to message #{2}".format(header,
                                                                self.reactor[:5],
                                                                self.message[:5])
+        elif self.type == "new_ping":
+            return "{0} #{1} pinged conversation #{2}".format(header,
+                                                              self.pinger[:5],
+                                                              self.conversation[:5])
+        elif self.type == "new_location":
+            return "{0} #{1} sent their location: {2} ({3}, {4})".format(header,
+                                                                  self.locator[:5],
+                                                                  self.location_name,
+                                                                  self.latitude,
+                                                                  self.longitude)
+        elif self.type == "message_deleted":
+            return "{0} #{1} deleted message #{2}".format(header,
+                                                          self.deleter[:5],
+                                                          self.message[:5])
+        elif self.type == "message_hidden":
+            return "{0} message #{1} was hidden by another client".format(header,
+                                                                          self.message[:5])
         elif self.type == "unknown": 
             return "{0} unknown event: {1} {2}".format(header,
                                                        self.raw_type,

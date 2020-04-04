@@ -21,8 +21,8 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	var event = {};
 	
 	//supply basic data
-	event.id = biwired_guaranteeUniqueness(rawEvent.id);
-	event.raw_id = rawEvent.id;
+	event.id = biwired_guaranteeUniqueness(rawEvent.id) || null;
+	event.raw_id = rawEvent.id || null;
 	event.raw_type = rawEvent.type;
 	event.time = new Date(rawEvent.time).getTime() / 1000 || null;
 	
@@ -32,6 +32,11 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.author = rawEvent.from;
 		event.content = rawEvent.data.content;
 		event.conversation = rawEvent.conversation;
+		
+		event.quote = rawEvent.data.quote ? rawEvent.data.quote.message_id : null;
+		event.mentions = [];
+		for (var i in rawEvent.data.mentions)
+			event.mentions.push(atob(rawEvent.mentions[i]).substr(6));
 		
 		if (rawEvent.data.replacing_message_id) {
 			event.type = "message_edited";
@@ -93,15 +98,44 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.message = rawEvent.data.message_id;
 		event.reactor = rawEvent.from;
 	}
+	else if (rawEvent.type == "conversation.knock") {
+		event.type = "new_ping";
+		event.pinger = rawEvent.from;
+		event.conversation = rawEvent.conversation;
+	}
+	else if (rawEvent.type == "conversation.location") {
+		event.type = "new_location";
+		event.locator = rawEvent.from;
+		event.conversation = rawEvent.conversation;
+		event.latitude = rawEvent.data.latitude;
+		event.longitude = rawEvent.data.longitude;
+		event.location_name = rawEvent.data.name;
+		event.zoom_level = rawEvent.data.zoom;
+	}
+	else if (rawEvent.type == "conversation.message-delete") {
+		event.type = "message_deleted";
+		event.message = rawEvent.data.message_id;
+		event.deleter = rawEvent.from;
+	}
+	else if (rawEvent.type == "conversation.delete-everywhere") {
+		//deletion timestamp, suppress
+		return;
+	}
+	else if (rawEvent.type == "conversation.message-hidden") {
+		event.type = "message_hidden";
+		event.message = rawEvent.data.message_id;
+	}
+	else if (rawEvent.type == "conversation.one2one-creation") {
+		//conversation authorship event, suppress
+		return;
+	}
+	else if (rawEvent.type == "conversation.group-creation") {
+		//conversation authorship event, suppress
+		return;
+	}
 	else if (rawEvent.type == "conversation.member-update") {
 		//last read timestamp update, suppress
 		return;
-	}
-	else if (rawEvent.type == "conversation.one2one-creation") {
-		if (event.time == null) {
-			//conversation authorship event, suppress
-			return;
-		}
 	}
 	else {
 		event.type = "unknown";
