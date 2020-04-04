@@ -1,5 +1,6 @@
 window.biwired_events = [];
 window.biwired_takenIds = new Set();
+window.biwired_assets = {};
 
 //wire permits duplicate event ids, generate fake id to guarantee uniqueness
 function biwired_guaranteeUniqueness(id) {
@@ -109,4 +110,13 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	
 	window.biwired_events.push(event);
 	window.biwired_takenIds.add(event.id);
+});
+
+amplify.subscribe("wire.webapp.conversation.message.added", function(rawEvent) {
+	//save assets for downloading
+	
+	if (rawEvent.type != "conversation.asset-add")
+		return;
+	
+	window.biwired_assets[rawEvent.id] = rawEvent.assets;
 });

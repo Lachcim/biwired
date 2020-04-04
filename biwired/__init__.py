@@ -1,3 +1,4 @@
+import os.path
 from selenium import webdriver
 
 class Biwired:  
@@ -14,7 +15,7 @@ class Biwired:
             except:
                 pass
         
-    def start_driver(self, driver=None):
+    def start_driver(self, driver=None, downloads="assets"):
         # provide default driver
         if not driver:
             options = webdriver.ChromeOptions()
@@ -22,6 +23,13 @@ class Biwired:
             options.add_argument("log-level=3")
             options.add_argument("user-agent=Mozilla/5.0 Chrome/80.0 Biwired/0.1")
             options.add_experimental_option("excludeSwitches", ["enable-logging"])
+            
+            prefs = {
+                "profile.default_content_settings.popups": 0,
+                "profile.default_content_setting_values.automatic_downloads": 1,
+                "download.default_directory": os.path.abspath(downloads)
+            }
+            options.add_experimental_option("prefs", prefs)
             
             driver = webdriver.Chrome(chrome_options=options)
         
