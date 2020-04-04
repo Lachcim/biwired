@@ -24,3 +24,5 @@ class Asset:
             name = self.key + os.path.splitext(self.name)[1]
             
         self.parent.execute_script("downloadasset", self.id, name)
+        
+        return True
