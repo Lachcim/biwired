@@ -52,3 +52,5 @@ def log_in(self, username=None, password=None, credentials_path="credentials.jso
     
     # start collecting events
     self.subscribe_to_events()
+    self.get_conversations()
+    self.get_users()

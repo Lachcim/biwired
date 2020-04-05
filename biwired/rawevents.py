@@ -1,7 +1,7 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from biwired.events import BiwiredEvent
-from biwired.messages import Message
+from biwired.datatypes import *
 
 def subscribe_to_events(self):
     self.execute_script("subscribe")
@@ -37,6 +37,11 @@ def pull_new_events(self, timeout=0, frequency=0.1):
     return self.process_event(event)
 
 def process_event(self, raw_event):
+    # update repositories
+    self.get_conversations()
+    self.get_users()
+    
+    # process messages
     if raw_event["type"] in ["new_message", "asset_started", "new_location"]:
         # register message
         self.messages[raw_event["id"]] = Message(self, raw_event)
@@ -55,3 +60,18 @@ def process_event(self, raw_event):
             raw_event["file_mime_type"] = self.messages[raw_event["id"]].content.name
     
     return BiwiredEvent(self, raw_event)
+
+def get_conversations(self):
+    raw_convos = self.execute_script("getconversations")
+    
+    for raw_convo in raw_convos:
+        self.conversations[raw_convo["id"]] = Conversation(self, raw_convo)
+        
+def get_users(self):
+    raw_users = self.execute_script("getusers")
+    
+    for raw_user in raw_users:
+        self.users[raw_user["id"]] = User(self, raw_user)
+        
+        if raw_user["is_self"]:
+            self.self_user = raw_user["id"]

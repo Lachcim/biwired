@@ -57,3 +57,29 @@ class Location:
         self.latitude = mother_event.get("latitude")
         self.longitude = mother_event.get("longitude")
         self.zoom_level = mother_event.get("zoom_level")
+
+class Conversation:
+    def __init__(self, parent, raw_convo={}):
+        self.parent = parent
+        
+        # inherit data from raw convo
+        for key, value in raw_convo.items():
+            setattr(self, key, value)
+            
+    def __str__(self):
+        return self.name
+            
+    def get_messages(self):
+        messages = filter(lambda x: x.conversation == self.id, self.parent.messages.values())
+        return sorted(messages, key=lambda x: x.time)
+            
+class User:
+    def __init__(self, parent, raw_convo={}):
+        self.parent = parent
+        
+        # inherit data from raw user
+        for key, value in raw_convo.items():
+            setattr(self, key, value)
+            
+    def __str__(self):
+        return self.name

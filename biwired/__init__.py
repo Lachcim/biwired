@@ -6,6 +6,9 @@ class Biwired:
         self.driver = None
         
         self.messages = {}
+        self.conversations = {}
+        self.users = {}
+        self.self_user = None
         
     def __del__(self):
         if self.driver:
@@ -45,4 +48,6 @@ class Biwired:
     from biwired.rawevents import (subscribe_to_events,
                                    get_new_events,
                                    pull_new_events,
-                                   process_event)
+                                   process_event,
+                                   get_conversations,
+                                   get_users)
