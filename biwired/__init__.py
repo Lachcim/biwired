@@ -5,7 +5,7 @@ class Biwired:
     def __init__(self):
         self.driver = None
         
-        self.assets = {}
+        self.messages = {}
         
     def __del__(self):
         if self.driver:

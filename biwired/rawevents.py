@@ -1,7 +1,7 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
-from biwired.assets import Asset
 from biwired.events import BiwiredEvent
+from biwired.messages import Message
 
 def subscribe_to_events(self):
     self.execute_script("subscribe")
@@ -37,35 +37,21 @@ def pull_new_events(self, timeout=0, frequency=0.1):
     return self.process_event(event)
 
 def process_event(self, raw_event):
-    # handle assets
-    if raw_event["type"] == "asset_started":
-        # create new asset
-        asset = Asset(self, raw_event["id"])
-        asset.name = raw_event["file_name"]
-        asset.size = raw_event["file_size"]
-        asset.mime_type = raw_event["file_mime_type"]
-        
-        # add new asset to repository
-        self.assets[raw_event["id"]] = asset
-        
-        # hide moved properties
-        del raw_event["file_name"]
-        del raw_event["file_size"]
-        del raw_event["file_mime_type"]
+    if raw_event["type"] in ["new_message", "asset_started", "new_location"]:
+        # register message
+        self.messages[raw_event["id"]] = Message(self, raw_event)
     elif raw_event["type"] == "new_asset":
-        # if the asset wasn't created by asset_started, create it now
-        if raw_event["id"] not in self.assets:
-            asset = Asset(self, raw_event["id"])
-            asset.name = raw_event["file_name"]
-            asset.size = raw_event["file_size"]
-            asset.mime_type = raw_event["file_mime_type"]
+        # register new message or update entry in repository
+        if raw_event["id"] not in self.messages:
+            self.messages[raw_event["id"]] = Message(self, raw_event)
+        else:
+            self.messages[raw_event["id"]].content.status = raw_event["status"]
+            self.messages[raw_event["id"]].content.key = raw_event["key"]
+            self.messages[raw_event["id"]].content.token = raw_event["token"]
             
-            # add to repository
-            self.assets[raw_event["id"]] = asset
-    
-        # expand entry in repository
-        self.assets[raw_event["id"]].success = raw_event["success"]
-        self.assets[raw_event["id"]].key = raw_event["key"]
-        self.assets[raw_event["id"]].token = raw_event["token"]
+            # overwrite event data with previously gathered one
+            raw_event["file_name"] = self.messages[raw_event["id"]].content.name
+            raw_event["file_size"] = self.messages[raw_event["id"]].content.name
+            raw_event["file_mime_type"] = self.messages[raw_event["id"]].content.name
     
     return BiwiredEvent(self, raw_event)

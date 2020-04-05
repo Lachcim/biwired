@@ -32,7 +32,7 @@ class BiwiredEvent:
                                                               self.message[:5],
                                                               self.content)
         elif self.type == "new_asset":
-            if self.success:
+            if self.status == "uploaded":
                 return "{0} [#{1}] #{2} uploaded asset to #{3}".format(time,
                                                                        self.id[:5],
                                                                        self.author[:5],
@@ -64,12 +64,13 @@ class BiwiredEvent:
                                                               self.pinger[:5],
                                                               self.conversation[:5])
         elif self.type == "new_location":
-            return "{0} [#{1}] #{1} sent their location: {2} ({3}, {4})".format(time,
-                                                                                self.id[:5],
-                                                                                self.locator[:5],
-                                                                                self.location_name,
-                                                                                self.latitude,
-                                                                                self.longitude)
+            return "{0} [#{1}] #{2} sent their location to #{3}: {4} ({5}, {6})".format(time,
+                                                                                        self.id[:5],
+                                                                                        self.author[:5],
+                                                                                        self.conversation[:5],
+                                                                                        self.location_name,
+                                                                                        self.latitude,
+                                                                                        self.longitude)
         elif self.type == "message_deleted":
             return "{0} #{1} deleted message #{2}".format(time,
                                                           self.deleter[:5],

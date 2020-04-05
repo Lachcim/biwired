@@ -41,25 +41,29 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		if (!rawEvent.data.status) {
 			//this handles (1.start)
 			event.type = "asset_started";
+			event.status = "uploading";
 			
-			//data sent through this event overrides consequent data because it's more truthful
+			//data sent through this event overrides subsequent data because it's more truthful
 			//this includes the original file size and image names
 			event.file_size = rawEvent.data.content_length;
 			event.file_mime_type = rawEvent.data.content_type;
 			event.file_name = rawEvent.data.info.name;
+			
+			//mark subsequent event as case 1
+			window.biwired_takenIds.add(event.type + event.id);
 		}
 		else {
 			//this handles (1.finish and 2)
 			
 			//if this is case 2, include previously unsupplied file info
-			if (!biwired_takenIds.has(event.id)) {
+			if (!biwired_takenIds.has("asset_started" + event.id)) {
 				event.file_size = rawEvent.data.content_length;
 				event.file_mime_type = rawEvent.data.content_type;
 				event.file_name = rawEvent.data.info.name;
 			}
 			
 			//mark as successful and provide key and token unless failed
-			event.success = rawEvent.data.status == "uploaded";
+			event.status = rawEvent.data.status == "uploaded" ? "uploaded" : "failed";
 			event.key = rawEvent.data.key || null;
 			event.token = rawEvent.data.token || null;
 		}
@@ -88,12 +92,13 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	else if (rawEvent.type == "conversation.location") {
 		event.type = "new_location";
 		event.id = rawEvent.id;
-		event.locator = rawEvent.from;
+		event.author = rawEvent.from;
 		event.conversation = rawEvent.conversation;
-		event.latitude = rawEvent.data.latitude;
-		event.longitude = rawEvent.data.longitude;
-		event.location_name = rawEvent.data.name;
-		event.zoom_level = rawEvent.data.zoom;
+		event.latitude = rawEvent.data.location.latitude;
+		event.longitude = rawEvent.data.location.longitude;
+		event.location_name = rawEvent.data.location.name;
+		event.zoom_level = rawEvent.data.location.zoom;
+		event.raw_data = rawEvent;
 	}
 	else if (rawEvent.type == "conversation.message-delete") {
 		event.type = "message_deleted";
@@ -156,7 +161,6 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	}
 	
 	window.biwired_events.push(event);
-	window.biwired_takenIds.add(event.id);
 });
 
 amplify.subscribe("wire.webapp.conversation.message.added", function(rawEvent) {
