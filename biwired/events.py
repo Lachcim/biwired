@@ -102,7 +102,34 @@ class BiwiredEvent:
                                                                       self.remover[:5],
                                                                       self.member[:5],
                                                                       self.conversation[:5])
-        elif self.type == "unknown": 
+        elif self.type == "new_request":
+            if self.incoming:
+                return "{0} new connection request from #{1}".format(time,
+                                                                     self.user[:5])
+            else:
+                return "{0} new connection request to #{1}".format(time,
+                                                                   self.user[:5])
+        elif self.type == "request_withdrawn":
+            if self.incoming:
+                return "{0} connection request from #{1} withdrawn".format(time,
+                                                                           self.user[:5])
+            else:
+                return "{0} connection request to #{1} withdrawn".format(time,
+                                                                         self.user[:5])
+        elif self.type == "request_accepted":
+            if self.incoming:
+                return "{0} connection request from #{1} accepted".format(time,
+                                                                          self.user[:5])
+            else:
+                return "{0} connection request to #{1} accepted".format(time,
+                                                                        self.user[:5])
+        elif self.type == "user_blocked":
+            return "{0} user #{1} was blocked by another client".format(time,
+                                                                        self.user[:5])
+        elif self.type == "user_unblocked":
+            return "{0} user #{1} was unblocked by another client".format(time,
+                                                                          self.user[:5])
+        elif self.type == "unknown":
             return "{0} unknown event: {1} {2}".format(time,
                                                        self.raw_type,
                                                        self.raw_data)

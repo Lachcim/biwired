@@ -1,16 +1,17 @@
 window.biwired_events = [];
 window.biwired_takenIds = new Set();
 window.biwired_assets = {};
+window.biwired_blockedUsers = new Set();
+window.biwired_outgoingConnections = new Set();
 
 amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEvent) {
-	//create event
 	var event = {};
 	
 	//supply basic data
 	event.raw_type = rawEvent.type;
 	event.time = new Date(rawEvent.time).getTime() / 1000 || null;
 	
-	// SECTION: BASIC CONVERSATION EVENTS
+	//SECTION: BASIC CONVERSATION EVENTS
 	if (rawEvent.type == "conversation.message-add") {
 		event.type = "new_message";
 		event.id = rawEvent.id;
@@ -113,7 +114,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.type = "message_hidden";
 		event.message = rawEvent.data.message_id;
 	}
-	// SECTION: CONVERSATION METADATA
+	//SECTION: CONVERSATION METADATA
 	else if (rawEvent.type == "conversation.one2one-creation") {
 		//conversation authorship event, suppress
 		return;
@@ -155,6 +156,11 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.member = rawEvent.data.target;
 		event.conversation = rawEvent.data.conversationId || rawEvent.conversation;
 	}
+	//SECTION: MISC
+	else if (rawEvent.type == "conversation.connect-request") {
+		//outgoing connection request, suppress
+		return;
+	}
 	else {
 		event.type = "unknown";
 		event.raw_data = rawEvent;
@@ -170,4 +176,61 @@ amplify.subscribe("wire.webapp.conversation.message.added", function(rawEvent) {
 		return;
 	
 	window.biwired_assets[rawEvent.id] = rawEvent.assets;
+});
+
+amplify.subscribe("wire.webapp.user.event_from_backend", function(rawEvent) {
+	var event = {};
+	
+	//supply basic data
+	event.raw_type = rawEvent.type;
+	event.time = null;
+	
+	//SECTION: CONNECTION REQUESTS AND UPDATES
+	if (rawEvent.type == "user.connection") {
+		//supply more basic data
+		event.time = new Date(rawEvent.connection.last_update).getTime() / 1000 || null;
+		event.user = rawEvent.connection.to;
+		
+		//handle different connection states
+		if (rawEvent.connection.status == "pending" || rawEvent.connection.status == "sent") {
+			if (rawEvent.connection.status == "sent")
+				window.biwired_outgoingConnections.add(event.user);
+			
+			event.type = "new_request";
+			event.incoming = !window.biwired_outgoingConnections.has(event.user);
+			event.message = rawEvent.connection.message.trim() || null;
+		}
+		else if (rawEvent.connection.status == "cancelled") {
+			event.type = "request_withdrawn";
+			event.incoming = !window.biwired_outgoingConnections.has(event.user);
+			
+			if (!event.incoming)
+				window.biwired_outgoingConnections.delete(event.user);
+		}
+		else if (rawEvent.connection.status == "accepted") {
+			if (window.biwired_blockedUsers.has(event.user)) {
+				event.type = "user_unblocked";
+				
+				window.biwired_blockedUsers.delete(event.user);
+			}
+			else {
+				event.type = "request_accepted";
+				event.conversation = rawEvent.connection.conversation;
+				event.incoming = !window.biwired_outgoingConnections.has(event.user);
+				
+				if (!event.incoming)
+					window.biwired_outgoingConnections.delete(event.user);
+			}
+		}
+		else if (rawEvent.connection.status == "blocked") {
+			event.type = "user_blocked";
+			window.biwired_blockedUsers.add(event.user);
+		}
+	}
+	else {
+		event.type = "unknown";
+		event.raw_data = rawEvent;
+	}
+	
+	window.biwired_events.push(event);
 });

@@ -20,6 +20,12 @@ for (var i in users) {
 	};
 	user.connection = connectionDict[users[i].connection().status()];
 	
+	//update connection data for event handling
+	if (user.connection == "blocked")
+		window.biwired_blockedUsers.add(user.id);
+	else if (user.connection == "outgoing")
+		window.biwired_outgoingConnections.add(user.id);
+	
 	output.push(user);
 }
 
