@@ -62,9 +62,12 @@ class Conversation:
     def __init__(self, parent, raw_convo={}):
         self.parent = parent
         
-        # inherit data from raw convo
-        for key, value in raw_convo.items():
-            setattr(self, key, value)
+        self.id = raw_convo.get("id")
+        self.name = raw_convo.get("name")
+        self.creator = raw_convo.get("creator")
+        self.type = raw_convo.get("type")
+        self.members = raw_convo.get("members")
+        self.admins = raw_convo.get("admins")
             
     def __str__(self):
         return self.name
@@ -74,12 +77,14 @@ class Conversation:
         return sorted(messages, key=lambda x: x.time)
             
 class User:
-    def __init__(self, parent, raw_convo={}):
+    def __init__(self, parent, raw_user={}):
         self.parent = parent
         
-        # inherit data from raw user
-        for key, value in raw_convo.items():
-            setattr(self, key, value)
+        self.id = raw_user.get("id")
+        self.name = raw_user.get("name")
+        self.handle = raw_user.get("handle")
+        self.is_self = raw_user.get("is_self", False)
+        self.conversation = raw_user.get("conversation")
             
     def __str__(self):
         return self.name
