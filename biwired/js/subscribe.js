@@ -26,7 +26,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	event.raw_type = rawEvent.type;
 	event.time = new Date(rawEvent.time).getTime() / 1000 || null;
 	
-	//type-specific code
+	// SECTION: BASIC CONVERSATION EVENTS
 	if (rawEvent.type == "conversation.message-add") {
 		event.type = "new_message";
 		event.author = rawEvent.from;
@@ -125,6 +125,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.type = "message_hidden";
 		event.message = rawEvent.data.message_id;
 	}
+	// SECTION: CONVERSATION METADATA
 	else if (rawEvent.type == "conversation.one2one-creation") {
 		//conversation authorship event, suppress
 		return;
@@ -133,9 +134,38 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		//conversation authorship event, suppress
 		return;
 	}
+	else if (rawEvent.type == "conversation.create") {
+		event.type = "new_conversation";
+		event.creator = rawEvent.from;
+		event.conversation = rawEvent.data.id;
+	}
+	else if (rawEvent.type == "conversation.member-join") {
+		event.type = "member_added";
+		event.members = rawEvent.data.user_ids;
+		event.adder = rawEvent.from;
+		event.conversation = rawEvent.conversation;
+	}
+	else if (rawEvent.type == "conversation.member-leave") {
+		event.type = "member_removed";
+		event.members = rawEvent.data.user_ids;
+		event.remover = rawEvent.from;
+		event.conversation = rawEvent.conversation;
+	}
 	else if (rawEvent.type == "conversation.member-update") {
-		//last read timestamp update, suppress
-		return;
+		//suppress irrelevant conversation updates
+		if (!rawEvent.data.conversation_role)
+			return;
+		
+		if (rawEvent.data.conversation_role == "wire_admin") {
+			event.type = "admin_added";
+			event.adder = rawEvent.from;
+		}
+		else {
+			event.type = "admin_removed";
+			event.remover = rawEvent.from;
+		}
+		event.member = rawEvent.data.target;
+		event.conversation = rawEvent.data.conversationId || rawEvent.conversation;
 	}
 	else {
 		event.type = "unknown";

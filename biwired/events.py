@@ -75,6 +75,30 @@ class BiwiredEvent:
         elif self.type == "message_hidden":
             return "{0} message #{1} was hidden by another client".format(header,
                                                                           self.message[:5])
+        elif self.type == "new_conversation":
+            return "{0} a new conversation #{1} was created by {2}".format(header,
+                                                                           self.conversation[:5],
+                                                                           self.creator[:5])
+        elif self.type == "member_added":
+            return "{0} #{1} added {2} to the conversation #{3}".format(header,
+                                                                         self.adder[:5],
+                                                                         ", ".join(["#{0}".format(x[:5]) for x in self.members]),
+                                                                         self.conversation[:5])
+        elif self.type == "member_removed":
+            return "{0} #{1} removed {2} from the conversation #{3}".format(header,
+                                                                            self.remover[:5],
+                                                                            ", ".join(["#{0}".format(x[:5]) for x in self.members]),
+                                                                            self.conversation[:5])
+        elif self.type == "admin_added":
+            return "{0} #{1} made #{2} an admin of #{3}".format(header,
+                                                                self.adder[:5],
+                                                                self.member[:5],
+                                                                self.conversation[:5])
+        elif self.type == "admin_removed":
+            return "{0} #{1} removed #{2} from admins of #{3}".format(header,
+                                                                      self.remover[:5],
+                                                                      self.member[:5],
+                                                                      self.conversation[:5])
         elif self.type == "unknown": 
             return "{0} unknown event: {1} {2}".format(header,
                                                        self.raw_type,
