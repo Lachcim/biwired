@@ -2,33 +2,18 @@ window.biwired_events = [];
 window.biwired_takenIds = new Set();
 window.biwired_assets = {};
 
-//wire permits duplicate event ids, generate fake id to guarantee uniqueness
-function biwired_guaranteeUniqueness(id) {
-	while (biwired_takenIds.has(id)) {	
-		var charCode = id.charCodeAt(0) + 1;
-		
-		if (charCode == 58) charCode = 97;
-		else if (charCode == 123) charCode = 48;
-		
-		id = String.fromCharCode(charCode) + id.substr(1);
-	}
-	
-	return id;
-}
-
 amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEvent) {
 	//create event
 	var event = {};
 	
 	//supply basic data
-	event.id = biwired_guaranteeUniqueness(rawEvent.id) || null;
-	event.raw_id = rawEvent.id || null;
 	event.raw_type = rawEvent.type;
 	event.time = new Date(rawEvent.time).getTime() / 1000 || null;
 	
 	// SECTION: BASIC CONVERSATION EVENTS
 	if (rawEvent.type == "conversation.message-add") {
 		event.type = "new_message";
+		event.id = rawEvent.id;
 		event.author = rawEvent.from;
 		event.content = rawEvent.data.content;
 		event.conversation = rawEvent.conversation;
@@ -44,7 +29,8 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		}
 	}
 	else if (rawEvent.type == "conversation.asset-add") {
-		event.type = "new_asset"
+		event.type = "new_asset";
+		event.id = rawEvent.id;
 		event.author = rawEvent.from;
 		event.conversation = rawEvent.conversation;
 		
@@ -55,7 +41,6 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		if (!rawEvent.data.status) {
 			//this handles (1.start)
 			event.type = "asset_started";
-			event.asset = event.raw_id;
 			
 			//data sent through this event overrides consequent data because it's more truthful
 			//this includes the original file size and image names
@@ -67,14 +52,11 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 			//this handles (1.finish and 2)
 			
 			//if this is case 2, include previously unsupplied file info
-			if (!biwired_takenIds.has(event.raw_id)) {
+			if (!biwired_takenIds.has(event.id)) {
 				event.file_size = rawEvent.data.content_length;
 				event.file_mime_type = rawEvent.data.content_type;
 				event.file_name = rawEvent.data.info.name;
 			}
-			
-			//in case 1, the original event id matches the start event's id
-			event.asset = event.raw_id;
 			
 			//mark as successful and provide key and token unless failed
 			event.success = rawEvent.data.status == "uploaded";
@@ -105,6 +87,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	}
 	else if (rawEvent.type == "conversation.location") {
 		event.type = "new_location";
+		event.id = rawEvent.id;
 		event.locator = rawEvent.from;
 		event.conversation = rawEvent.conversation;
 		event.latitude = rawEvent.data.latitude;

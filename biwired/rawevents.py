@@ -40,13 +40,13 @@ def process_event(self, raw_event):
     # handle assets
     if raw_event["type"] == "asset_started":
         # create new asset
-        asset = Asset(self, raw_event["asset"])
+        asset = Asset(self, raw_event["id"])
         asset.name = raw_event["file_name"]
         asset.size = raw_event["file_size"]
         asset.mime_type = raw_event["file_mime_type"]
         
         # add new asset to repository
-        self.assets[raw_event["asset"]] = asset
+        self.assets[raw_event["id"]] = asset
         
         # hide moved properties
         del raw_event["file_name"]
@@ -54,18 +54,18 @@ def process_event(self, raw_event):
         del raw_event["file_mime_type"]
     elif raw_event["type"] == "new_asset":
         # if the asset wasn't created by asset_started, create it now
-        if raw_event["asset"] not in self.assets:
-            asset = Asset(self, raw_event["asset"])
+        if raw_event["id"] not in self.assets:
+            asset = Asset(self, raw_event["id"])
             asset.name = raw_event["file_name"]
             asset.size = raw_event["file_size"]
             asset.mime_type = raw_event["file_mime_type"]
             
             # add to repository
-            self.assets[raw_event["asset"]] = asset
+            self.assets[raw_event["id"]] = asset
     
         # expand entry in repository
-        self.assets[raw_event["asset"]].success = raw_event["success"]
-        self.assets[raw_event["asset"]].key = raw_event["key"]
-        self.assets[raw_event["asset"]].token = raw_event["token"]
+        self.assets[raw_event["id"]].success = raw_event["success"]
+        self.assets[raw_event["id"]].key = raw_event["key"]
+        self.assets[raw_event["id"]].token = raw_event["token"]
     
     return BiwiredEvent(self, raw_event)
