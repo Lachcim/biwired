@@ -3,21 +3,21 @@ import os.path
 import urllib.request
 
 class Message:
-    def __init__(self, parent, mother_event=None):
+    def __init__(self, parent, mother_event={}):
         self.parent = parent
         
-        self.id = None
-        self.author = None
-        self.time = None
-        self.conversation = None
+        self.id = mother_event.get("id")
+        self.author = mother_event.get("author")
+        self.time = mother_event.get("time")
+        self.conversation = mother_event.get("conversation")
+        self.mentions = mother_event.get("mentions", [])
+        self.quote = mother_event.get("quote")
         self.content = None
         
-        if mother_event:
-            self.id = mother_event["id"]
-            self.author = mother_event["author"]
-            self.time = mother_event["time"]
-            self.conversation = mother_event["conversation"]
-            
+        if self.time:
+            self.time = datetime.fromtimestamp(self.time)
+        
+        if mother_event.get("type"): 
             if mother_event["type"] == "new_message":
                 self.content = mother_event["content"]
             elif mother_event["type"] in ["new_asset", "asset_started"]:
