@@ -40,6 +40,7 @@ class Biwired:
         self.driver = driver
         self.driver.get("https://app.wire.com/auth/#login")
         
+    from biwired.actions import send_message
     from biwired.auth import log_in
     from biwired.helpers import (find_element,
                                  wait_for_element,

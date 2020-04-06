@@ -22,7 +22,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		event.quote = rawEvent.data.quote ? rawEvent.data.quote.message_id : null;
 		event.mentions = [];
 		for (var i in rawEvent.data.mentions)
-			event.mentions.push(atob(rawEvent.mentions[i]).substr(6));
+			event.mentions.push(atob(rawEvent.data.mentions[i]).substr(6));
 		
 		if (rawEvent.data.replacing_message_id) {
 			event.type = "message_edited";
