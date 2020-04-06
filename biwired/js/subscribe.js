@@ -24,6 +24,10 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		for (var i in rawEvent.data.mentions)
 			event.mentions.push(atob(rawEvent.data.mentions[i]).substr(6));
 		
+		//suppress preview updates
+		if (window.biwired_takenIds.has(event.type + event.id)) return;
+		window.biwired_takenIds.add(event.type + event.id);
+		
 		if (rawEvent.data.replacing_message_id) {
 			event.type = "message_edited";
 			event.message = rawEvent.data.replacing_message_id;
