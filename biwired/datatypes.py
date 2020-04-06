@@ -1,6 +1,5 @@
 from datetime import datetime
 import os.path
-import urllib.request
 
 class Message:
     def __init__(self, parent, mother_event={}):
@@ -9,6 +8,7 @@ class Message:
         self.id = mother_event.get("id")
         self.author = mother_event.get("author")
         self.time = mother_event.get("time")
+        self.edited_time = None
         self.conversation = mother_event.get("conversation")
         self.mentions = mother_event.get("mentions", [])
         self.quote = mother_event.get("quote")
@@ -24,6 +24,24 @@ class Message:
                 self.content = Asset(self.parent, mother_event)
             elif mother_event["type"] == "new_location":
                 self.content = Location(mother_event)
+            elif mother_event["type"] == "message_edited":
+                self.content = mother_event["content"]
+                self.time = datetime.fromtimestamp(mother_event["original_time"])
+                self.edited_time = datetime.fromtimestamp(mother_event["time"])
+
+class MessageAlias:
+    def __init__(self, parent, of):
+        object.__setattr__(self, "alias_parent", parent)
+        object.__setattr__(self, "alias_of", of)
+        
+    def __getattr__(self, attribute):        
+        return getattr(self.alias_parent.messages[self.alias_of], attribute)
+        
+    def __setattr__(self, attribute, value):        
+        if not hasattr(self.alias_parent.messages[self.alias_of], attribute):
+            raise AttributeError
+            
+        setattr(self.alias_parent.messages[self.alias_of], attribute, value)
 
 class Asset:
     def __init__(self, parent, mother_event={}):

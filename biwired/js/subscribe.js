@@ -30,7 +30,9 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 		
 		if (rawEvent.data.replacing_message_id) {
 			event.type = "message_edited";
-			event.message = rawEvent.data.replacing_message_id;
+			event.replacing_id = rawEvent.data.replacing_message_id;
+			event.original_time = event.time;
+			event.time = new Date(rawEvent.edited_time).getTime() / 1000;
 		}
 	}
 	else if (rawEvent.type == "conversation.asset-add") {

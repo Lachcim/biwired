@@ -44,9 +44,11 @@ def process_event(self, raw_event):
     # process messages
     if raw_event["type"] in ["new_message", "asset_started", "new_location"]:
         # register message
+        
         self.messages[raw_event["id"]] = Message(self, raw_event)
     elif raw_event["type"] == "new_asset":
         # register new message or update entry in repository
+        
         if raw_event["id"] not in self.messages:
             self.messages[raw_event["id"]] = Message(self, raw_event)
         else:
@@ -58,6 +60,11 @@ def process_event(self, raw_event):
             raw_event["file_name"] = self.messages[raw_event["id"]].content.name
             raw_event["file_size"] = self.messages[raw_event["id"]].content.name
             raw_event["file_mime_type"] = self.messages[raw_event["id"]].content.name
+    elif raw_event["type"] == "message_edited":
+        # register new message and set up alias
+        
+        self.messages[raw_event["id"]] = Message(self, raw_event)
+        self.messages[raw_event["replacing_id"]] = MessageAlias(self, raw_event["id"])
     
     return BiwiredEvent(self, raw_event)
 

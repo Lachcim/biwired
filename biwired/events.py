@@ -27,10 +27,11 @@ class BiwiredEvent:
                                                                      self.conversation[:5],
                                                                      self.content)
         elif self.type == "message_edited":
-            return "{0} #{1} edited message #{2}: {3}".format(time,
-                                                              self.author[:5],
-                                                              self.message[:5],
-                                                              self.content)
+            return "{0} [#{1}] #{2} edited message #{3}: {4}".format(time,
+                                                                     self.id[:5],
+                                                                     self.author[:5],
+                                                                     self.replacing_id[:5],
+                                                                     self.content)
         elif self.type == "new_asset":
             if self.status == "uploaded":
                 return "{0} [#{1}] #{2} uploaded asset to #{3}".format(time,
