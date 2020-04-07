@@ -1,6 +1,6 @@
 import os.path
 import re
-import biwired.datatypes
+from biwired.datatypes import *
 
 def send_message(self, conversation, content, quoting=None, mentions=None, translate_mentions=True):
     # initialize empty array for mentions
@@ -42,3 +42,27 @@ def send_file(self, conversation, file_path, is_image=False):
     self.find_element("#biwired_fileInput").send_keys(os.path.abspath(file_path))
     
     return self.execute_async_script("actions/sendfile", conversation, is_image)
+
+def download_asset(self, id, name=None):
+    asset = self.messages[id].content
+    
+    if not isinstance(asset, Asset):
+        return False
+    
+    if asset.status != "uploaded":
+        return False
+    
+    # compose default name: key + extension
+    if not name:
+        name = asset.key + os.path.splitext(asset.name)[1]
+        
+    self.execute_script("actions/downloadasset", id, name)
+    
+    return True
+    
+def get_conversation_messages(self, id):
+    if not self.conversations[id]:
+        return None
+
+    messages = filter(lambda x: x.conversation == id, self.messages.values())
+    return sorted(messages, key=lambda x: x.time)

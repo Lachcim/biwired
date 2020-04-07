@@ -45,12 +45,12 @@ def process_event(self, raw_event):
     if raw_event["type"] in ["new_message", "asset_started", "new_location"]:
         # register message
         
-        self.messages[raw_event["id"]] = Message(self, raw_event)
+        self.messages[raw_event["id"]] = Message(raw_event)
     elif raw_event["type"] == "new_asset":
         # register new message or update entry in repository
         
         if raw_event["id"] not in self.messages:
-            self.messages[raw_event["id"]] = Message(self, raw_event)
+            self.messages[raw_event["id"]] = Message(raw_event)
         else:
             self.messages[raw_event["id"]].content.status = raw_event["status"]
             self.messages[raw_event["id"]].content.key = raw_event["key"]
@@ -63,8 +63,8 @@ def process_event(self, raw_event):
     elif raw_event["type"] == "message_edited":
         # register new message and set up alias
         
-        self.messages[raw_event["id"]] = Message(self, raw_event)
-        self.messages[raw_event["replacing_id"]] = MessageAlias(self, raw_event["id"])
+        self.messages[raw_event["id"]] = Message(raw_event)
+        self.messages[raw_event["replacing_id"]] = MessageAlias(self.messages, raw_event["id"])
     elif raw_event["type"] == "reaction_added":    
         # add reaction
         
@@ -80,13 +80,13 @@ def get_conversations(self):
     raw_convos = self.execute_script("getconversations")
     
     for raw_convo in raw_convos:
-        self.conversations[raw_convo["id"]] = Conversation(self, raw_convo)
+        self.conversations[raw_convo["id"]] = Conversation(raw_convo)
         
 def get_users(self):
     raw_users = self.execute_script("getusers")
     
     for raw_user in raw_users:
-        self.users[raw_user["id"]] = User(self, raw_user)
+        self.users[raw_user["id"]] = User(raw_user)
         
         if raw_user["is_self"]:
             self.self_user = raw_user["id"]
