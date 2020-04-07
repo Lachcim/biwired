@@ -83,7 +83,7 @@ amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEve
 	else if (rawEvent.type == "conversation.confirmation") {
 		event.type = "message_delivered";
 		event.reader = rawEvent.from;
-		event.message = message_id;
+		event.message = rawEvent.data.message_id;
 		
 		//suppress event for other clients
 		if (window.biwired_takenIds.has(event.type + event.message))
