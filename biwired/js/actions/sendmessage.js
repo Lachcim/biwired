@@ -11,8 +11,10 @@ for (var i in conversations)
 		break;
 	}
 
-if (!conversation)
+if (!conversation) {
 	callback(null);
+	return;
+}
 	
 //create mention entities
 var mentions = [];

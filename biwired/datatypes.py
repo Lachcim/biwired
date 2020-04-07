@@ -66,7 +66,7 @@ class Asset:
         if not name:
             name = self.key + os.path.splitext(self.name)[1]
             
-        self.parent.execute_script("downloadasset", self.message_id, name)
+        self.parent.execute_script("actions/downloadasset", self.message_id, name)
         
         return True
 

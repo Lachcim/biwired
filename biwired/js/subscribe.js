@@ -4,6 +4,11 @@ window.biwired_assets = {};
 window.biwired_blockedUsers = new Set();
 window.biwired_outgoingConnections = new Set();
 
+window.biwired_fileInput = document.createElement("input");
+window.biwired_fileInput.type = "file";
+window.biwired_fileInput.id = "biwired_fileInput";
+window.biwired_fileInput = document.body.appendChild(biwired_fileInput);
+
 amplify.subscribe("wire.webapp.conversation.event_from_backend", function(rawEvent) {
 	var event = {};
 	

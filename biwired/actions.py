@@ -1,3 +1,4 @@
+import os.path
 import re
 import biwired.datatypes
 
@@ -33,5 +34,11 @@ def send_message(self, conversation, content, quoting=None, mentions=None, trans
             match = pattern.search(content, position)
     
     # execute script
-    result = self.execute_async_script("sendmessage", conversation, content, mentions, quoting)
+    result = self.execute_async_script("actions/sendmessage", conversation, content, mentions, quoting)
     return result["messageId"] if result else None
+    
+def send_file(self, conversation, file_path, is_image=False):
+    # type image path into file input
+    self.find_element("#biwired_fileInput").send_keys(os.path.abspath(file_path))
+    
+    return self.execute_async_script("actions/sendfile", conversation, is_image)
