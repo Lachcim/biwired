@@ -10,14 +10,6 @@ class Biwired:
         self.users = {}
         self.self_user = None
         
-    def __del__(self):
-        if self.driver:
-            try:
-                # kill driver, ignore exceptions due to Python shutting down
-                self.driver.quit()
-            except:
-                pass
-        
     def start_driver(self, driver=None, downloads="assets"):
         # provide default driver
         if not driver:
@@ -39,6 +31,14 @@ class Biwired:
         # start: request login screen
         self.driver = driver
         self.driver.get("https://app.wire.com/auth/#login")
+        
+    def kill_driver(self):
+        if self.driver:
+            try:
+                # ignore exceptions due to Python shutting down
+                self.driver.quit()
+            except:
+                pass
         
     from biwired.actions import (send_message,
                                  send_file)
