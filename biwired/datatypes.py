@@ -10,8 +10,9 @@ class Message:
         self.time = mother_event.get("time")
         self.edited_time = None
         self.conversation = mother_event.get("conversation")
-        self.mentions = mother_event.get("mentions", [])
+        self.mentions = set(mother_event.get("mentions", []))
         self.quote = mother_event.get("quote")
+        self.reactions = set()
         self.content = None
         
         if self.time:

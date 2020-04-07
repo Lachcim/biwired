@@ -65,7 +65,15 @@ def process_event(self, raw_event):
         
         self.messages[raw_event["id"]] = Message(self, raw_event)
         self.messages[raw_event["replacing_id"]] = MessageAlias(self, raw_event["id"])
+    elif raw_event["type"] == "reaction_added":    
+        # add reaction
+        
+        self.messages[raw_event["message"]].reactions.add(raw_event["reactor"])
+    elif raw_event["type"] == "reaction_removed":
+        # remove reaction
     
+        self.messages[raw_event["message"]].reactions.remove(raw_event["reactor"])
+        
     return BiwiredEvent(self, raw_event)
 
 def get_conversations(self):
